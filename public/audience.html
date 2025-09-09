@@ -73,12 +73,57 @@
         .fade-transition {
             transition: opacity 0.3s ease-in-out;
         }
+        .scoreboard {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            gap: 20px;
+            font-size: 16px;
+            border: 2px solid #3498db;
+        }
+        .team-display {
+            text-align: center;
+            min-width: 80px;
+        }
+        .team-display .team-name {
+            font-size: 14px;
+            color: #bdc3c7;
+            margin-bottom: 5px;
+        }
+        .team-display .team-score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .scoreboard-separator {
+            color: #7f8c8d;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
     <div class="slide-container">
         <div class="connection-status" id="connectionStatus">
             <span class="disconnected">Connecting...</span>
+        </div>
+        
+        <!-- Live Scoreboard -->
+        <div class="scoreboard" id="scoreboard">
+            <div class="team-display">
+                <div class="team-name" id="team1Name">Team 1</div>
+                <div class="team-score" id="team1Score">0</div>
+            </div>
+            <div class="scoreboard-separator">vs</div>
+            <div class="team-display">
+                <div class="team-name" id="team2Name">Team 2</div>
+                <div class="team-score" id="team2Score">0</div>
+            </div>
         </div>
         
         <div class="loading" id="loadingMessage">Loading presentation...</div>
@@ -126,6 +171,11 @@
             currentSlides = data.slides;
             currentIndex = data.currentIndex;
             updateSlideDisplay();
+        });
+
+        // Score updates from presenter
+        socket.on('scoreUpdate', (data) => {
+            updateScoreDisplay(data);
         });
 
         function updateSlideDisplay() {
@@ -181,6 +231,13 @@
             e.preventDefault();
         });
 
+        function updateScoreDisplay(scores) {
+            document.getElementById('team1Name').textContent = scores.team1.name;
+            document.getElementById('team1Score').textContent = scores.team1.score;
+            document.getElementById('team2Name').textContent = scores.team2.name;
+            document.getElementById('team2Score').textContent = scores.team2.score;
+        }
+
         // Initial load
         fetch('/api/slides')
             .then(response => response.json())
@@ -192,6 +249,15 @@
             .catch(error => {
                 console.error('Error loading initial slides:', error);
                 loadingMessage.textContent = 'Error loading presentation';
+            });
+
+        fetch('/api/scores')
+            .then(response => response.json())
+            .then(data => {
+                updateScoreDisplay(data);
+            })
+            .catch(error => {
+                console.error('Error loading initial scores:', error);
             });
     </script>
 </body>

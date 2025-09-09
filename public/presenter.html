@@ -24,7 +24,72 @@
             display: grid;
             grid-template-columns: 1fr 2fr 1fr;
             gap: 20px;
-            height: calc(100vh - 150px);
+            height: calc(100vh - 250px);
+        }
+        .scoring-panel {
+            background: #34495e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .team-score {
+            text-align: center;
+            background: #2c3e50;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .team-name {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #bdc3c7;
+        }
+        .team-name input {
+            background: transparent;
+            border: 1px solid #7f8c8d;
+            color: white;
+            padding: 5px;
+            border-radius: 3px;
+            text-align: center;
+            width: 120px;
+        }
+        .score-display {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #3498db;
+        }
+        .score-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .score-btn {
+            padding: 8px 16px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .score-btn.add {
+            background-color: #27ae60;
+        }
+        .score-btn:hover {
+            opacity: 0.8;
+        }
+        .score-actions {
+            text-align: center;
+            margin-top: 15px;
+        }
+        .reset-btn {
+            background-color: #e67e22;
+            padding: 8px 20px;
         }
         .preview-container {
             display: flex;
@@ -119,6 +184,33 @@
         <div class="slide-counter" id="slideCounter">Slide 1 of 0</div>
     </div>
 
+    <!-- Team Scoring Panel -->
+    <div class="scoring-panel">
+        <div class="team-score">
+            <div class="team-name">
+                <input type="text" id="team1Name" value="Team 1" onchange="updateTeamNames()">
+            </div>
+            <div class="score-display" id="team1Score">0</div>
+            <div class="score-controls">
+                <button class="score-btn" onclick="updateScore('team1', -10)">-10</button>
+                <button class="score-btn add" onclick="updateScore('team1', 10)">+10</button>
+            </div>
+        </div>
+        <div class="team-score">
+            <div class="team-name">
+                <input type="text" id="team2Name" value="Team 2" onchange="updateTeamNames()">
+            </div>
+            <div class="score-display" id="team2Score">0</div>
+            <div class="score-controls">
+                <button class="score-btn" onclick="updateScore('team2', -10)">-10</button>
+                <button class="score-btn add" onclick="updateScore('team2', 10)">+10</button>
+            </div>
+        </div>
+        <div class="score-actions" style="grid-column: 1 / -1;">
+            <button class="score-btn reset-btn" onclick="resetScores()">Reset Scores</button>
+        </div>
+    </div>
+
     <div class="main-container">
         <!-- Previous Slide -->
         <div class="preview-container">
@@ -178,6 +270,10 @@
             slides = data.slides;
             currentIndex = data.currentIndex;
             updateDisplay();
+        });
+
+        socket.on('scoreUpdate', (data) => {
+            updateScoreDisplay(data);
         });
 
         // Navigation functions
@@ -255,6 +351,28 @@
             }
         });
 
+        // Scoring functions
+        function updateScore(team, change) {
+            socket.emit('updateScore', { team, change });
+        }
+
+        function resetScores() {
+            socket.emit('resetScores');
+        }
+
+        function updateTeamNames() {
+            const team1Name = document.getElementById('team1Name').value;
+            const team2Name = document.getElementById('team2Name').value;
+            socket.emit('updateTeamNames', { team1Name, team2Name });
+        }
+
+        function updateScoreDisplay(scores) {
+            document.getElementById('team1Score').textContent = scores.team1.score;
+            document.getElementById('team2Score').textContent = scores.team2.score;
+            document.getElementById('team1Name').value = scores.team1.name;
+            document.getElementById('team2Name').value = scores.team2.name;
+        }
+
         // Initial load
         fetch('/api/slides')
             .then(response => response.json())
@@ -262,6 +380,12 @@
                 slides = data.slides;
                 currentIndex = data.currentIndex;
                 updateDisplay();
+            });
+
+        fetch('/api/scores')
+            .then(response => response.json())
+            .then(data => {
+                updateScoreDisplay(data);
             });
     </script>
 </body>

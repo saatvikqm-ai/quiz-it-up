@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audience View - Slide Presentation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        .slide-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .slide-image {
+            max-width: 95vw;
+            max-height: 95vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(255,255,255,0.1);
+        }
+        .no-slide {
+            text-align: center;
+            font-size: 24px;
+            color: #666;
+        }
+        .slide-info {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        .connection-status {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        .connected {
+            color: #2ecc71;
+        }
+        .disconnected {
+            color: #e74c3c;
+        }
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            color: #666;
+        }
+        .fade-transition {
+            transition: opacity 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="connection-status" id="connectionStatus">
+            <span class="disconnected">Connecting...</span>
+        </div>
+        
+        <div class="loading" id="loadingMessage">Loading presentation...</div>
+        
+        <img id="slideImage" class="slide-image fade-transition" style="display: none;" alt="Current slide">
+        
+        <div id="noSlideMessage" class="no-slide" style="display: none;">
+            <h2>No slides available</h2>
+            <p>Waiting for presenter to load slides...</p>
+        </div>
+        
+        <div class="slide-info" id="slideInfo" style="display: none;">
+            Slide <span id="slideNumber">1</span> of <span id="totalSlides">0</span>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        
+        // DOM elements
+        const slideImage = document.getElementById('slideImage');
+        const noSlideMessage = document.getElementById('noSlideMessage');
+        const slideInfo = document.getElementById('slideInfo');
+        const slideNumber = document.getElementById('slideNumber');
+        const totalSlides = document.getElementById('totalSlides');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const loadingMessage = document.getElementById('loadingMessage');
+
+        let currentSlides = [];
+        let currentIndex = 0;
+
+        // Connection status
+        socket.on('connect', () => {
+            connectionStatus.innerHTML = '<span class="connected">Connected</span>';
+            loadingMessage.style.display = 'none';
+        });
+
+        socket.on('disconnect', () => {
+            connectionStatus.innerHTML = '<span class="disconnected">Disconnected</span>';
+        });
+
+        // Slide updates from presenter
+        socket.on('slideUpdate', (data) => {
+            currentSlides = data.slides;
+            currentIndex = data.currentIndex;
+            updateSlideDisplay();
+        });
+
+        function updateSlideDisplay() {
+            if (currentSlides.length === 0) {
+                // No slides available
+                slideImage.style.display = 'none';
+                slideInfo.style.display = 'none';
+                noSlideMessage.style.display = 'block';
+                loadingMessage.style.display = 'none';
+                return;
+            }
+
+            // Hide loading and no-slide messages
+            loadingMessage.style.display = 'none';
+            noSlideMessage.style.display = 'none';
+
+            // Show current slide
+            const currentSlide = currentSlides[currentIndex];
+            if (currentSlide) {
+                // Fade out current image
+                slideImage.style.opacity = '0';
+                
+                setTimeout(() => {
+                    slideImage.src = currentSlide;
+                    slideImage.style.display = 'block';
+                    slideImage.onload = () => {
+                        slideImage.style.opacity = '1';
+                    };
+                }, 150);
+
+                // Update slide info
+                slideNumber.textContent = currentIndex + 1;
+                totalSlides.textContent = currentSlides.length;
+                slideInfo.style.display = 'block';
+            }
+        }
+
+        // Handle image load errors
+        slideImage.onerror = () => {
+            console.error('Failed to load slide:', currentSlides[currentIndex]);
+            slideImage.style.display = 'none';
+            noSlideMessage.innerHTML = '<h2>Error loading slide</h2><p>Please check if the slide file exists.</p>';
+            noSlideMessage.style.display = 'block';
+        };
+
+        // Prevent right-click context menu (optional, for presentation mode)
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+
+        // Prevent text selection (optional, for cleaner presentation)
+        document.addEventListener('selectstart', (e) => {
+            e.preventDefault();
+        });
+
+        // Initial load
+        fetch('/api/slides')
+            .then(response => response.json())
+            .then(data => {
+                currentSlides = data.slides;
+                currentIndex = data.currentIndex;
+                updateSlideDisplay();
+            })
+            .catch(error => {
+                console.error('Error loading initial slides:', error);
+                loadingMessage.textContent = 'Error loading presentation';
+            });
+    </script>
+</body>
+</html>

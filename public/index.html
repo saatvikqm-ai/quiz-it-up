@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide Presentation App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background-color: #f5f5f5;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .button.secondary {
+            background-color: #6c757d;
+        }
+        .button.secondary:hover {
+            background-color: #545b62;
+        }
+        .info {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            text-align: left;
+        }
+        .info h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .info ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Slide Presentation App</h1>
+        <p>Choose your view:</p>
+        
+        <a href="/presenter" class="button">Presenter View</a>
+        <a href="/audience" class="button secondary">Audience View</a>
+        
+        <div class="info">
+            <h3>How to use:</h3>
+            <ul>
+                <li><strong>Presenter View:</strong> Control slides, see current/next/previous slides, navigate presentation</li>
+                <li><strong>Audience View:</strong> Shows only the current slide, automatically syncs with presenter</li>
+                <li>Add your PNG slide images to the <code>slides/</code> directory</li>
+                <li>Use keyboard arrows or buttons to navigate (presenter view only)</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

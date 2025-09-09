@@ -7,7 +7,7 @@ A real-time slide presentation application with separate presenter and audience 
 - **Presenter View**: Control slides with navigation buttons and keyboard shortcuts, preview next/previous slides
 - **Audience View**: Clean, full-screen display of current slide only
 - **Real-time Synchronization**: Audience view automatically updates when presenter changes slides
-- **Dynamic Team Configuration**: Configure 2-6 teams with custom names from the main page
+- **Dynamic Team Configuration**: Configure 2-8 teams with custom names from the main page
 - **Live Team Scoring**: Maintain scores for multiple teams with +10/-10 point controls
 - **Scoreboard Toggle Control**: Show/hide scoreboard with large, readable display for audience
 - **Real-time Score Display**: Scores update instantly on both presenter and audience views
@@ -36,11 +36,10 @@ A real-time slide presentation application with separate presenter and audience 
 
 ## Usage
 
-1. **Configure Teams**: 
-   - Visit the main page (http://localhost:3000) to set up teams
-   - Choose number of teams (2-6) and customize team names
-   - Click "Save Team Configuration" to apply changes
-   - Configuration updates all views in real-time
+1. **Team Configuration** (Main Page):
+   - Select number of teams (2-8) from dropdown
+   - Enter custom team names for each team
+   - Save configuration to apply to both presenter and audience views
 
 2. **Add Slides**: Place your PNG files in the `slides/` directory. Files will be sorted alphabetically.
 

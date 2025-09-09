@@ -27,6 +27,9 @@ let teamScores = {
     team2: { name: 'Team 2', score: 0 }
 };
 
+// Scoreboard visibility state
+let scoreboardVisible = false;
+
 // Load slides from directory
 function loadSlides() {
     const slidesDir = path.join(__dirname, 'slides');
@@ -119,6 +122,7 @@ io.on('connection', (socket) => {
     });
     
     socket.emit('scoreUpdate', teamScores);
+    socket.emit('scoreboardVisibility', { visible: scoreboardVisible });
     
     // Handle slide navigation from presenter
     socket.on('nextSlide', () => {
@@ -187,6 +191,12 @@ io.on('connection', (socket) => {
         if (data.team1Name) teamScores.team1.name = data.team1Name;
         if (data.team2Name) teamScores.team2.name = data.team2Name;
         io.emit('scoreUpdate', teamScores);
+    });
+    
+    // Handle scoreboard visibility toggle
+    socket.on('toggleScoreboard', (data) => {
+        scoreboardVisible = data.visible;
+        io.emit('scoreboardVisibility', { visible: scoreboardVisible });
     });
     
     socket.on('disconnect', () => {

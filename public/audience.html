@@ -75,35 +75,41 @@
         }
         .scoreboard {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.8);
-            padding: 15px;
-            border-radius: 8px;
-            display: flex;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            padding: 40px;
+            border-radius: 15px;
+            display: none;
             flex-wrap: wrap;
-            gap: 15px;
-            font-size: 16px;
-            border: 2px solid #3498db;
-            max-width: 400px;
+            gap: 30px;
+            font-size: 28px;
+            border: 4px solid #3498db;
+            max-width: 80vw;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .scoreboard.visible {
+            display: flex;
         }
         .team-display {
             text-align: center;
             min-width: 80px;
         }
         .team-display .team-name {
-            font-size: 14px;
+            font-size: 20px;
             color: #bdc3c7;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
         .team-display .team-score {
-            font-size: 24px;
+            font-size: 48px;
             font-weight: bold;
             color: #3498db;
         }
         .scoreboard-separator {
             color: #7f8c8d;
-            font-size: 20px;
+            font-size: 32px;
             display: flex;
             align-items: center;
         }
@@ -170,6 +176,11 @@
         // Score updates from presenter
         socket.on('scoreUpdate', (data) => {
             updateScoreDisplay(data);
+        });
+
+        // Scoreboard visibility updates
+        socket.on('scoreboardVisibility', (data) => {
+            updateScoreboardVisibility(data.visible);
         });
 
         function updateSlideDisplay() {
@@ -256,6 +267,15 @@
                     scoreboard.appendChild(separator);
                 }
             });
+        }
+
+        function updateScoreboardVisibility(isVisible) {
+            const scoreboard = document.getElementById('scoreboard');
+            if (isVisible) {
+                scoreboard.classList.add('visible');
+            } else {
+                scoreboard.classList.remove('visible');
+            }
         }
 
         // Initial load

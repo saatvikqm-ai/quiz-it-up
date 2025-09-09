@@ -91,6 +91,14 @@
             background-color: #e67e22;
             padding: 8px 20px;
         }
+        .toggle-btn {
+            background-color: #9b59b6;
+            padding: 8px 20px;
+            margin-left: 10px;
+        }
+        .toggle-btn:hover {
+            background-color: #8e44ad;
+        }
         .preview-container {
             display: flex;
             flex-direction: column;
@@ -189,6 +197,7 @@
         <!-- Dynamic team scores will be generated here -->
         <div class="score-actions" style="grid-column: 1 / -1;">
             <button class="score-btn reset-btn" onclick="resetScores()">Reset Scores</button>
+            <button class="score-btn toggle-btn" id="toggleScoreboardBtn" onclick="toggleScoreboard()">Show Scoreboard</button>
         </div>
     </div>
 
@@ -255,6 +264,10 @@
 
         socket.on('scoreUpdate', (data) => {
             updateScoreDisplay(data);
+        });
+
+        socket.on('scoreboardVisibility', (data) => {
+            updateToggleButton(data.visible);
         });
 
         // Navigation functions
@@ -361,8 +374,8 @@
         function generateTeamScoreElements(scores) {
             const scoringPanel = document.getElementById('scoringPanel');
             
-            // Clear existing team elements (keep reset button)
-            const resetButton = scoringPanel.querySelector('.score-actions');
+            // Clear existing team elements (keep action buttons)
+            const actionButtons = scoringPanel.querySelector('.score-actions');
             scoringPanel.innerHTML = '';
             
             // Generate team score elements
@@ -386,8 +399,21 @@
                 scoringPanel.appendChild(teamDiv);
             });
             
-            // Re-add reset button
-            scoringPanel.appendChild(resetButton);
+            // Re-add action buttons
+            scoringPanel.appendChild(actionButtons);
+        }
+
+        // Scoreboard toggle functionality
+        function toggleScoreboard() {
+            const currentlyVisible = document.getElementById('toggleScoreboardBtn').textContent === 'Hide Scoreboard';
+            const newVisibility = !currentlyVisible;
+            
+            socket.emit('toggleScoreboard', { visible: newVisibility });
+        }
+
+        function updateToggleButton(isVisible) {
+            const toggleBtn = document.getElementById('toggleScoreboardBtn');
+            toggleBtn.textContent = isVisible ? 'Hide Scoreboard' : 'Show Scoreboard';
         }
 
         // Initial load

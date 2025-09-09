@@ -9,6 +9,7 @@ A real-time slide presentation application with separate presenter and audience 
 - **Real-time Synchronization**: Audience view automatically updates when presenter changes slides
 - **Dynamic Team Configuration**: Configure 2-6 teams with custom names from the main page
 - **Live Team Scoring**: Maintain scores for multiple teams with +10/-10 point controls
+- **Scoreboard Toggle Control**: Show/hide scoreboard with large, readable display for audience
 - **Real-time Score Display**: Scores update instantly on both presenter and audience views
 - **Team Name Customization**: Edit team names and configure team count
 - **PNG Support**: Load slides from PNG images in a directory
@@ -53,10 +54,12 @@ A real-time slide presentation application with separate presenter and audience 
      - Use +10/-10 buttons to adjust scores for each team
      - "Reset Scores" button to set all teams back to 0
      - Scores can be positive or negative (no minimum limit)
+     - **"Show/Hide Scoreboard" toggle button** to control audience display
 
 4. **Audience View**: 
    - Shows only the current slide in full-screen
-   - **Dynamic Live Scoreboard**: Displays all team names and current scores in top-right corner
+   - **Dynamic Live Scoreboard**: Hidden by default, appears as large overlay when toggled by presenter
+   - Large, readable scoreboard display centered on screen when visible
    - Automatically syncs with presenter's navigation and scoring changes
    - Clean interface with no audience controls
 

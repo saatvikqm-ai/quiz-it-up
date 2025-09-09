@@ -7,9 +7,10 @@ A real-time slide presentation application with separate presenter and audience 
 - **Presenter View**: Control slides with navigation buttons and keyboard shortcuts, preview next/previous slides
 - **Audience View**: Clean, full-screen display of current slide only
 - **Real-time Synchronization**: Audience view automatically updates when presenter changes slides
-- **Live Team Scoring**: Maintain scores for two teams with +10/-10 point controls
+- **Dynamic Team Configuration**: Configure 2-6 teams with custom names from the main page
+- **Live Team Scoring**: Maintain scores for multiple teams with +10/-10 point controls
 - **Real-time Score Display**: Scores update instantly on both presenter and audience views
-- **Team Name Customization**: Edit team names directly in presenter view
+- **Team Name Customization**: Edit team names and configure team count
 - **PNG Support**: Load slides from PNG images in a directory
 - **Keyboard Navigation**: Use arrow keys to navigate slides in presenter view
 
@@ -34,21 +35,28 @@ A real-time slide presentation application with separate presenter and audience 
 
 ## Usage
 
-1. **Add Slides**: Place your PNG files in the `slides/` directory. Files will be sorted alphabetically.
+1. **Configure Teams**: 
+   - Visit the main page (http://localhost:3000) to set up teams
+   - Choose number of teams (2-6) and customize team names
+   - Click "Save Team Configuration" to apply changes
+   - Configuration updates all views in real-time
 
-2. **Presenter Controls**:
+2. **Add Slides**: Place your PNG files in the `slides/` directory. Files will be sorted alphabetically.
+
+3. **Presenter Controls**:
    - Use "Previous" and "Next" buttons or arrow keys to navigate slides
    - Press 'R' to reload slides if you add new files
    - See current slide in center, with previews of previous/next slides on sides
-   - **Team Scoring Panel**: 
+   - **Dynamic Team Scoring Panel**: 
+     - Displays all configured teams with their scores
      - Edit team names by clicking on the name fields
      - Use +10/-10 buttons to adjust scores for each team
-     - "Reset Scores" button to set both teams back to 0
-     - Scores cannot go below 0
+     - "Reset Scores" button to set all teams back to 0
+     - Scores can be positive or negative (no minimum limit)
 
-3. **Audience View**: 
+4. **Audience View**: 
    - Shows only the current slide in full-screen
-   - **Live Scoreboard**: Displays team names and current scores in top-right corner
+   - **Dynamic Live Scoreboard**: Displays all team names and current scores in top-right corner
    - Automatically syncs with presenter's navigation and scoring changes
    - Clean interface with no audience controls
 
@@ -76,8 +84,10 @@ slide-presentation/
 
 - Built with Node.js, Express, and Socket.io
 - Real-time communication between presenter and audience for slides and scoring
+- Dynamic team configuration (2-6 teams) with persistent state during session
 - Responsive design for different screen sizes
 - Automatic slide loading and sorting
-- Live team scoring with real-time synchronization
+- Live team scoring with real-time synchronization across all views
 - Score persistence during session (resets on server restart)
-- Team name customization with instant updates
+- Team name and count customization with instant updates
+- RESTful API endpoints for team configuration and data retrieval

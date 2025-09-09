@@ -8,6 +8,9 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
+// Parse JSON bodies
+app.use(express.json());
+
 const PORT = process.env.PORT || 3000;
 
 // Serve static files
@@ -18,7 +21,7 @@ app.use('/slides', express.static('slides'));
 let currentSlideIndex = 0;
 let slides = [];
 
-// Team scoring state
+// Team scoring state - now dynamic
 let teamScores = {
     team1: { name: 'Team 1', score: 0 },
     team2: { name: 'Team 2', score: 0 }
@@ -69,6 +72,39 @@ app.get('/api/slides', (req, res) => {
 
 app.get('/api/scores', (req, res) => {
     res.json(teamScores);
+});
+
+app.get('/api/teams', (req, res) => {
+    res.json(teamScores);
+});
+
+app.post('/api/configure-teams', (req, res) => {
+    try {
+        const { teams } = req.body;
+        
+        if (!teams || !Array.isArray(teams)) {
+            return res.status(400).json({ success: false, error: 'Invalid teams data' });
+        }
+        
+        // Create new team scores object
+        const newTeamScores = {};
+        teams.forEach(team => {
+            newTeamScores[team.id] = {
+                name: team.name,
+                score: team.score || 0
+            };
+        });
+        
+        teamScores = newTeamScores;
+        
+        // Broadcast the updated team configuration to all connected clients
+        io.emit('scoreUpdate', teamScores);
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error configuring teams:', error);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
 });
 
 // Socket.io connection handling
@@ -134,15 +170,16 @@ io.on('connection', (socket) => {
         const { team, change } = data;
         if (teamScores[team]) {
             teamScores[team].score += change;
-            // Ensure score doesn't go below 0
-            teamScores[team].score = Math.max(0, teamScores[team].score);
+            // Allow negative scores - no minimum restriction
             io.emit('scoreUpdate', teamScores);
         }
     });
     
     socket.on('resetScores', () => {
-        teamScores.team1.score = 0;
-        teamScores.team2.score = 0;
+        // Reset all teams to 0, regardless of how many teams are configured
+        Object.keys(teamScores).forEach(teamId => {
+            teamScores[teamId].score = 0;
+        });
         io.emit('scoreUpdate', teamScores);
     });
     

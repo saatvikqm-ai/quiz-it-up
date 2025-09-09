@@ -32,7 +32,7 @@
             border-radius: 8px;
             margin-bottom: 20px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
         }
         .team-score {
@@ -185,27 +185,8 @@
     </div>
 
     <!-- Team Scoring Panel -->
-    <div class="scoring-panel">
-        <div class="team-score">
-            <div class="team-name">
-                <input type="text" id="team1Name" value="Team 1" onchange="updateTeamNames()">
-            </div>
-            <div class="score-display" id="team1Score">0</div>
-            <div class="score-controls">
-                <button class="score-btn" onclick="updateScore('team1', -10)">-10</button>
-                <button class="score-btn add" onclick="updateScore('team1', 10)">+10</button>
-            </div>
-        </div>
-        <div class="team-score">
-            <div class="team-name">
-                <input type="text" id="team2Name" value="Team 2" onchange="updateTeamNames()">
-            </div>
-            <div class="score-display" id="team2Score">0</div>
-            <div class="score-controls">
-                <button class="score-btn" onclick="updateScore('team2', -10)">-10</button>
-                <button class="score-btn add" onclick="updateScore('team2', 10)">+10</button>
-            </div>
-        </div>
+    <div class="scoring-panel" id="scoringPanel">
+        <!-- Dynamic team scores will be generated here -->
         <div class="score-actions" style="grid-column: 1 / -1;">
             <button class="score-btn reset-btn" onclick="resetScores()">Reset Scores</button>
         </div>
@@ -361,16 +342,52 @@
         }
 
         function updateTeamNames() {
-            const team1Name = document.getElementById('team1Name').value;
-            const team2Name = document.getElementById('team2Name').value;
-            socket.emit('updateTeamNames', { team1Name, team2Name });
+            const teamNames = {};
+            const scoringPanel = document.getElementById('scoringPanel');
+            const teamInputs = scoringPanel.querySelectorAll('input[id$="Name"]');
+            
+            teamInputs.forEach(input => {
+                const teamId = input.id.replace('Name', '');
+                teamNames[teamId + 'Name'] = input.value;
+            });
+            
+            socket.emit('updateTeamNames', teamNames);
         }
 
         function updateScoreDisplay(scores) {
-            document.getElementById('team1Score').textContent = scores.team1.score;
-            document.getElementById('team2Score').textContent = scores.team2.score;
-            document.getElementById('team1Name').value = scores.team1.name;
-            document.getElementById('team2Name').value = scores.team2.name;
+            generateTeamScoreElements(scores);
+        }
+
+        function generateTeamScoreElements(scores) {
+            const scoringPanel = document.getElementById('scoringPanel');
+            
+            // Clear existing team elements (keep reset button)
+            const resetButton = scoringPanel.querySelector('.score-actions');
+            scoringPanel.innerHTML = '';
+            
+            // Generate team score elements
+            Object.keys(scores).forEach(teamId => {
+                const team = scores[teamId];
+                
+                const teamDiv = document.createElement('div');
+                teamDiv.className = 'team-score';
+                
+                teamDiv.innerHTML = `
+                    <div class="team-name">
+                        <input type="text" id="${teamId}Name" value="${team.name}" onchange="updateTeamNames()">
+                    </div>
+                    <div class="score-display" id="${teamId}Score">${team.score}</div>
+                    <div class="score-controls">
+                        <button class="score-btn" onclick="updateScore('${teamId}', -10)">-10</button>
+                        <button class="score-btn add" onclick="updateScore('${teamId}', 10)">+10</button>
+                    </div>
+                `;
+                
+                scoringPanel.appendChild(teamDiv);
+            });
+            
+            // Re-add reset button
+            scoringPanel.appendChild(resetButton);
         }
 
         // Initial load

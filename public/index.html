@@ -59,6 +59,75 @@
             margin: 10px 0;
             padding-left: 20px;
         }
+        .team-config {
+            margin: 30px 0;
+            padding: 25px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+        }
+        .team-config h3 {
+            color: #495057;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #495057;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .team-inputs {
+            margin-top: 15px;
+        }
+        .team-input {
+            margin-bottom: 10px;
+        }
+        .team-input input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .config-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+            transition: background-color 0.3s;
+        }
+        .config-button:hover {
+            background-color: #218838;
+        }
+        .current-config {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #d1ecf1;
+            border-radius: 5px;
+            border-left: 4px solid #17a2b8;
+        }
+        .current-config h4 {
+            margin-top: 0;
+            color: #0c5460;
+        }
     </style>
 </head>
 <body>
@@ -68,6 +137,32 @@
         
         <a href="/presenter" class="button">Presenter View</a>
         <a href="/audience" class="button secondary">Audience View</a>
+        
+        <!-- Team Configuration Section -->
+        <div class="team-config">
+            <h3>Team Configuration</h3>
+            <div class="form-group">
+                <label for="teamCount">Number of Teams:</label>
+                <select id="teamCount" onchange="updateTeamInputs()">
+                    <option value="2">2 Teams</option>
+                    <option value="3">3 Teams</option>
+                    <option value="4">4 Teams</option>
+                    <option value="5">5 Teams</option>
+                    <option value="6">6 Teams</option>
+                </select>
+            </div>
+            
+            <div class="team-inputs" id="teamInputs">
+                <!-- Team name inputs will be generated here -->
+            </div>
+            
+            <button class="config-button" onclick="saveTeamConfiguration()">Save Team Configuration</button>
+            
+            <div class="current-config" id="currentConfig">
+                <h4>Current Configuration:</h4>
+                <div id="configDisplay">Loading...</div>
+            </div>
+        </div>
         
         <div class="info">
             <h3>How to use:</h3>
@@ -79,5 +174,99 @@
             </ul>
         </div>
     </div>
+
+    <script>
+        let currentTeamConfig = [];
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrentConfiguration();
+            updateTeamInputs();
+        });
+
+        function updateTeamInputs() {
+            const teamCount = parseInt(document.getElementById('teamCount').value);
+            const teamInputsContainer = document.getElementById('teamInputs');
+            
+            teamInputsContainer.innerHTML = '';
+            
+            for (let i = 1; i <= teamCount; i++) {
+                const teamDiv = document.createElement('div');
+                teamDiv.className = 'team-input';
+                
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = `team${i}Name`;
+                input.placeholder = `Team ${i} Name`;
+                input.value = currentTeamConfig[i-1] ? currentTeamConfig[i-1].name : `Team ${i}`;
+                
+                teamDiv.appendChild(input);
+                teamInputsContainer.appendChild(teamDiv);
+            }
+        }
+
+        function saveTeamConfiguration() {
+            const teamCount = parseInt(document.getElementById('teamCount').value);
+            const teams = [];
+            
+            for (let i = 1; i <= teamCount; i++) {
+                const nameInput = document.getElementById(`team${i}Name`);
+                teams.push({
+                    id: `team${i}`,
+                    name: nameInput.value || `Team ${i}`,
+                    score: 0
+                });
+            }
+            
+            fetch('/api/configure-teams', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ teams: teams })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Team configuration saved successfully!');
+                    loadCurrentConfiguration();
+                } else {
+                    alert('Error saving configuration: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error saving configuration');
+            });
+        }
+
+        function loadCurrentConfiguration() {
+            fetch('/api/teams')
+                .then(response => response.json())
+                .then(data => {
+                    currentTeamConfig = Object.values(data);
+                    displayCurrentConfiguration(data);
+                    
+                    // Update the dropdown to match current config
+                    document.getElementById('teamCount').value = Object.keys(data).length;
+                    updateTeamInputs();
+                })
+                .catch(error => {
+                    console.error('Error loading configuration:', error);
+                    document.getElementById('configDisplay').textContent = 'Error loading configuration';
+                });
+        }
+
+        function displayCurrentConfiguration(teams) {
+            const configDisplay = document.getElementById('configDisplay');
+            const teamNames = Object.values(teams).map(team => `${team.name} (${team.score} points)`);
+            
+            if (teamNames.length > 0) {
+                configDisplay.innerHTML = `<strong>${teamNames.length} teams:</strong> ${teamNames.join(', ')}`;
+            } else {
+                configDisplay.textContent = 'No teams configured';
+            }
+        }
+    </script>
 </body>
 </html>

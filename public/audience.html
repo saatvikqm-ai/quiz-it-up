@@ -81,9 +81,11 @@
             padding: 15px;
             border-radius: 8px;
             display: flex;
-            gap: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
             font-size: 16px;
             border: 2px solid #3498db;
+            max-width: 400px;
         }
         .team-display {
             text-align: center;
@@ -115,15 +117,7 @@
         
         <!-- Live Scoreboard -->
         <div class="scoreboard" id="scoreboard">
-            <div class="team-display">
-                <div class="team-name" id="team1Name">Team 1</div>
-                <div class="team-score" id="team1Score">0</div>
-            </div>
-            <div class="scoreboard-separator">vs</div>
-            <div class="team-display">
-                <div class="team-name" id="team2Name">Team 2</div>
-                <div class="team-score" id="team2Score">0</div>
-            </div>
+            <!-- Dynamic team displays will be generated here -->
         </div>
         
         <div class="loading" id="loadingMessage">Loading presentation...</div>
@@ -232,10 +226,36 @@
         });
 
         function updateScoreDisplay(scores) {
-            document.getElementById('team1Name').textContent = scores.team1.name;
-            document.getElementById('team1Score').textContent = scores.team1.score;
-            document.getElementById('team2Name').textContent = scores.team2.name;
-            document.getElementById('team2Score').textContent = scores.team2.score;
+            generateScoreboardElements(scores);
+        }
+
+        function generateScoreboardElements(scores) {
+            const scoreboard = document.getElementById('scoreboard');
+            scoreboard.innerHTML = '';
+            
+            const teamIds = Object.keys(scores);
+            
+            teamIds.forEach((teamId, index) => {
+                const team = scores[teamId];
+                
+                const teamDiv = document.createElement('div');
+                teamDiv.className = 'team-display';
+                
+                teamDiv.innerHTML = `
+                    <div class="team-name">${team.name}</div>
+                    <div class="team-score">${team.score}</div>
+                `;
+                
+                scoreboard.appendChild(teamDiv);
+                
+                // Add separator between teams (except after the last team)
+                if (index < teamIds.length - 1) {
+                    const separator = document.createElement('div');
+                    separator.className = 'scoreboard-separator';
+                    separator.textContent = 'vs';
+                    scoreboard.appendChild(separator);
+                }
+            });
         }
 
         // Initial load
